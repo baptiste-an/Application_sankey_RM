@@ -18,6 +18,7 @@ from slider import PlaybackSliderAIO
 from collections import Counter
 import pickle
 import lzma
+import numpy as np
 
 
 # VALID_USERNAME_PASSWORD_PAIRS = [["hello", "world"]]
@@ -246,7 +247,7 @@ def fig_sankey(
             + ".pkl.lzma"
         )
     else:
-        sankey_type = "Commodity ownership"
+        sankey_type = "Commodity"
         preprocessed_data_path = (
             "Results/Sankey_preprocessed/"
             + sankey_type
