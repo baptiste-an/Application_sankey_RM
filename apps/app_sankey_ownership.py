@@ -17,6 +17,7 @@ from app import app
 from slider import PlaybackSliderAIO
 from collections import Counter
 import pickle
+import lzma
 
 
 # VALID_USERNAME_PASSWORD_PAIRS = [["hello", "world"]]
@@ -230,10 +231,10 @@ def fig_sankey(
         + region
         + "_"
         + str(year)
-        + ".pkl"
+        + ".pkl.lzma"
     )
     preprocessed_data_path = DATA_PATH.joinpath(preprocessed_data_path)
-    with open(preprocessed_data_path, "rb") as f:
+    with lzma.open(preprocessed_data_path, "rb") as f:
         preprocessed_data = pickle.load(f)
 
     # Extract Sankey, layout, and arrows/labels
