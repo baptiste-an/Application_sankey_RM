@@ -3,4 +3,5 @@ __pycache__/*
 */__pycache__/*
 cache/
 *.pyc
-
+run_server.py
+index_offline.py

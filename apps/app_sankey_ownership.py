@@ -46,7 +46,7 @@ dropdown = dcc.Dropdown(
     id="slct2",
     options=LABELS,
     multi=False,
-    value="FRA",
+    value="CHN",
 )
 dropdown_subtype = dcc.Dropdown(
     id="slct_subtype",
@@ -113,7 +113,7 @@ citation = html.Div(
         html.P(html.Strong("Citation:"), className="mb-0"),
         html.P(
             [
-                "Andrieu, B., Cervantes Barron, K., Heydari, M., Cullen, J., In prep. ",
+                "Andrieu, B., Cervantes Barron, K., Heydari, M., Keshavarzzadeh, A., Cullen, J., In prep. ",
                 link,
             ]
         ),
