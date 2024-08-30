@@ -18,6 +18,7 @@ from slider import PlaybackSliderAIO
 from collections import Counter
 import pickle
 import lzma
+import numpy as np
 
 
 # VALID_USERNAME_PASSWORD_PAIRS = [["hello", "world"]]
@@ -195,6 +196,18 @@ layout = dbc.Container(
     ],
     fluid=True,
 )
+color_mapping = {
+    "#0072ff": "#4C72B0",  # Deep Blue
+    "#00cafe": "#55A868",  # Green
+    "#b0ebff": "#C44E52",  # Red
+    "#fff1b7": "#8172B3",  # Purple
+    "#ffdc23": "#CCB974",  # Mustard Yellow
+    "#ffb758": "#64B5CD",  # Cyan
+    "#ff8200": "#8C8C8C",  # Gray
+    "#0072ff": "#E377C2",  # Pink
+    "#00cafe": "#F39C12",  # Orange
+    "#b0ebff": "#17BECF",  # Sky Blue
+}
 
 
 @app.callback(
@@ -241,6 +254,11 @@ def fig_sankey(
     sankey = preprocessed_data["sankey"]
     layout = preprocessed_data["layout"]
     arrows_and_labels = preprocessed_data["arrows_and_labels"]
+
+    updated_colors = [
+        color_mapping.get(color, color) for color in sankey["link"]["color"]
+    ]
+    sankey["link"]["color"] = np.array(updated_colors)
 
     # Create the figure
     fig = go.Figure(sankey)

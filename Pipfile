@@ -15,6 +15,7 @@ dash-auth = "*"
 dash-bootstrap-components = "*"
 nbformat = "*"
 waitress = "*"
+numpy="*"
 
 [dev-packages]
 
