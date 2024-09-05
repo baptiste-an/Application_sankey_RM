@@ -9,6 +9,6 @@ app = dash.Dash(
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
     ],
-    title="Sankey GHG",
+    title="Sankey commodities",
 )
 server = app.server

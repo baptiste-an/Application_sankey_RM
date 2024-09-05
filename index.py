@@ -37,7 +37,7 @@ app.layout = html.Div(
                     # label_style={"color": "#00005A"},
                 ),
                 dbc.Tab(
-                    label="DOCUMENTATION AND DOWNLOADS",
+                    label="Documentation and downloads",
                     tab_id="tab-3",
                     active_label_style={"color": "#FF8200"},
                     # label_style={"color": "#00005A"},

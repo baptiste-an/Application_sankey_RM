@@ -39,6 +39,8 @@ REGIONS = {}
 with open(f"{DATA_PATH}/dictreg.json") as f:
     REGIONS = json.loads(f.read())
 # REGIONS = {"FRA": "France", "CHN": "China", "GBR": "United Kingdom"}
+REGIONS.pop('DYE')
+REGIONS.pop('SDS')
 
 LABELS = [{"label": v, "value": k} for k, v in REGIONS.items()]
 
@@ -52,6 +54,7 @@ dropdown_subtype = dcc.Dropdown(
     id="slct_subtype",
     options=[
         "Copper ores",
+        "Iron ores",
         "Nickel ores",
         "Lead ores",
         "Zinc ores",
@@ -60,6 +63,7 @@ dropdown_subtype = dcc.Dropdown(
         "Uranium ores",
         "Gold ores",
         "Silver ores",
+        "Aluminium ores",
     ],
     multi=False,
     value="Copper ores",
@@ -67,20 +71,21 @@ dropdown_subtype = dcc.Dropdown(
 dropdown_unit = dcc.Dropdown(
     id="slct_unit",
     options=[
-        "Tonnes",
-        #  "Tonnes per capita",
+        "kTonnes",
+        "Tonnes per capita",
     ],
     multi=False,
-    value="Tonnes",
+    value="kTonnes",
 )
+
 graph = dcc.Graph(id="graph2", responsive=True, style={"height": "550px"})
 slider = PlaybackSliderAIO(
     aio_id="bruh2",
     slider_props={
         "min": 2000,
-        "max": 2022,  # 2019
+        "max": 2022,
         "step": 1,
-        "value": 2008,
+        "value": 2022,
         "marks": {str(year): str(year) for year in range(2000, 2023, 1)},
     },
     button_props={"className": "float-left"},
@@ -214,12 +219,14 @@ color_mapping = {
     Output("graph2", "figure"),
     Input("slct2", "value"),
     Input(PlaybackSliderAIO.ids.slider("bruh2"), "value"),
+    Input("slct_unit", "value"),
     Input("slct_subtype", "value"),
 )
 @cache.memoize()
 def fig_sankey(
     region,
     year,
+    unit="kTonnes",
     sankey_subtype="Copper ores",
 ):
     """Builds sankey diagram.
@@ -234,7 +241,7 @@ def fig_sankey(
     fig : figure
     """
 
-    sankey_type = "Commodity ownership"
+    sankey_type = "Commodity all ownership"
     preprocessed_data_path = (
         "Results/Sankey_preprocessed/"
         + sankey_type
@@ -251,7 +258,10 @@ def fig_sankey(
         preprocessed_data = pickle.load(f)
 
     # Extract Sankey, layout, and arrows/labels
-    sankey = preprocessed_data["sankey"]
+    if unit == "kTonnes":
+        sankey = preprocessed_data["sankey"]
+    elif unit == "Tonnes per capita":
+        sankey = preprocessed_data["sankey_cap"]
     layout = preprocessed_data["layout"]
     arrows_and_labels = preprocessed_data["arrows_and_labels"]
 
@@ -267,5 +277,149 @@ def fig_sankey(
     # Add preprocessed shapes and annotations
     fig.update_layout(shapes=arrows_and_labels["shapes"])
     fig.update_layout(annotations=arrows_and_labels["annotations"])
+
+    # Define legends based on the Sankey type
+    if sankey_type in ["Commodity", "Commodity all ownership", "All commodities"]:
+        legend_data = {
+            "Commodity": {
+                "colors": [
+                    "white",
+                    "#4C72B0",
+                    "#55A868",
+                    "#C44E52",
+                    "#8172B3",
+                    "#CCB974",
+                    "#64B5CD",
+                    "#8C8C8C",
+                    "#E377C2",
+                ],
+                "names": [
+                    "<b>Region of ores extraction:</b>",
+                    REGIONS[region],
+                    "Africa",
+                    "Asia-Pacific",
+                    "EECCA",
+                    "Europe",
+                    "Latin America",
+                    "Middle East",
+                    "North America",
+                ],
+            },
+            "Commodity all ownership": {
+                "colors": [
+                    "white",
+                    "#4C72B0",
+                    "#55A868",
+                    "#C44E52",
+                    "#8172B3",
+                    "#CCB974",
+                    "#64B5CD",
+                    "#8C8C8C",
+                    "#E377C2",
+                    "#F39C12",
+                ],
+                "names": [
+                    "<b>Nationality of mine owners:</b>",
+                    REGIONS[region],
+                    "Africa",
+                    "Asia-Pacific",
+                    "EECCA",
+                    "Europe",
+                    "Latin America",
+                    "Middle East",
+                    "North America",
+                    "Unknown",
+                ],
+            },
+            "All commodities": {
+                "colors": [
+                    "white",
+                    "#4C72B0",
+                    "#55A868",
+                    "#C44E52",
+                    "#8172B3",
+                    "#CCB974",
+                    "#64B5CD",
+                    "#8C8C8C",
+                    "#E377C2",
+                ],
+                "names": [
+                    "<b>Metal ores:</b>",
+                    "Aluminium ores",
+                    "Chromium ores",
+                    "Copper ores",
+                    "Gold ores",
+                    "Iron ores",
+                    "Lead ores",
+                    "Manganese ores",
+                    "Nickel ores",
+                ],
+                "colors2": [
+                    "white",
+                    "#F39C12",
+                    "#17BECF",
+                    "#9E9E9E",
+                    "#F1A340",
+                    "#D84A6B",
+                    "#5E4FA2",
+                    "#2C7BB6",
+                ],
+                "names2": [
+                    " ",
+                    "Other metal ores",
+                    "Platinum ores",
+                    "Silver ores",
+                    "Tin ores",
+                    "Titanium ores",
+                    "Uranium ores",
+                    "Zinc ores",
+                ],
+            },
+        }
+
+        # Generate Scatter traces for the legend
+        def create_legend(colors, names):
+            return [
+                go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode="markers",
+                    marker=dict(size=10, color=clr),
+                    showlegend=True,
+                    name=nm,
+                )
+                for clr, nm in zip(colors, names)
+            ]
+
+        legend_info = legend_data[sankey_type]
+        legend_traces = create_legend(legend_info["colors"], legend_info["names"])
+        fig.add_traces(legend_traces)
+
+        yleg = -0.06
+        if sankey_type == "All commodities":
+            legend_traces2 = create_legend(
+                legend_info["colors2"], legend_info["names2"]
+            )
+            fig.add_traces(legend_traces2)
+            fig.update_layout(
+                showlegend=True,
+                legend=dict(
+                    orientation="h", yanchor="bottom", y=0, xanchor="center", x=0.5
+                ),
+                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                plot_bgcolor="white",
+            )
+            yleg = -0.11
+
+        fig.update_layout(
+            showlegend=True,
+            legend=dict(
+                orientation="h", yanchor="bottom", y=yleg, xanchor="center", x=0.5
+            ),
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            plot_bgcolor="white",
+        )
 
     return fig
