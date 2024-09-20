@@ -2,7 +2,6 @@ from waitress import serve
 from index import (
     app,
 )  # Make sure 'index' is your main file and 'app' is the Dash instance
-
 import os
 
 if __name__ == "__main__":

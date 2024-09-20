@@ -110,6 +110,13 @@ link3 = html.A(
     target="_blank",
 )
 
+explanation = dcc.Markdown(
+    """
+    Any flow represented here is related to the region selected either because ores were extracted in that region, or because ores were embodied in the region's final consumption. The flows unrelated to the region selected are not shown.
+    """
+)
+
+
 wording = text = dcc.Markdown(
     """
     Suggested wording: *We used the sankey diagrams (Andrieu et al. In prep) based on release 059 of the GLORIA global environmentally-extended multi-region input-output (MRIO) database (Lenzen et al. 2021), constructed in the Global MRIO Lab (Lenzen et al. 2017).*
@@ -118,6 +125,7 @@ wording = text = dcc.Markdown(
 
 citation = html.Div(
     [
+        explanation,
         html.P(html.Strong("Citation:"), className="mb-0"),
         html.P(
             [
