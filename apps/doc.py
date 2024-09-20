@@ -17,7 +17,7 @@ text = dcc.Markdown(
 
     ##### Code and figures downloads
 
-    The **code** used to calculate used to build the **sankeys** is available on github: https://github.com/Resource-Efficiency-Collective/Mapping-metal-flows.
+    The **code** used to calculate used to build the **sankeys** is available on github: https://github.com/baptiste-an/Mapping-metal-flows-sankeys.
 
     The **code** to build the **application** is based on: https://github.com/baptiste-an/Application-mapping-GHG.
 
