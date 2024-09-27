@@ -110,6 +110,7 @@ link3 = html.A(
 explanation = dcc.Markdown(
     """
     Any flow represented here is related to the region selected either because ores were controlled by companies whose headquarters were based in that region, or because the ores were extracted in that region, or because ores were embodied in the region's final consumption. The flows unrelated to the region selected are not shown.
+    EECCA refers to Eastern Europe, Caucasus and Central Asia. RoW refers to Rest of the World. NPISHS refers to Non-Profit Institutions Serving Households. GFCF refers to Gross Fixed Capital Formation.
     """
 )
 
