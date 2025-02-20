@@ -41,13 +41,14 @@ with open(f"{DATA_PATH}/dictreg.json") as f:
 # REGIONS = {"FRA": "France", "CHN": "China", "GBR": "United Kingdom"}
 REGIONS.pop("DYE")
 REGIONS.pop("SDS")
+REGIONS["World"] = "World"
 LABELS = [{"label": v, "value": k} for k, v in REGIONS.items()]
 
 dropdown = dcc.Dropdown(
     id="slct2_2",
     options=LABELS,
     multi=False,
-    value="CHN",
+    value="World",
 )
 dropdown_subtype = dcc.Dropdown(
     id="slct_subtype_2",
