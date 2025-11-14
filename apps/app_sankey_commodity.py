@@ -96,8 +96,8 @@ slider = PlaybackSliderAIO(
     interval_props={"interval": 2500},
 )
 link = html.A(
-    "https://www.refficiency.org/",
-    href="https://www.refficiency.org/",
+    "https://www.nature.com/articles/s43247-025-02321-1",
+    href="https://www.nature.com/articles/s43247-025-02321-1",
     target="_blank",
 )
 link2 = html.A(
@@ -131,7 +131,7 @@ citation = html.Div(
         html.P(html.Strong("Citation:"), className="mb-0"),
         html.P(
             [
-                "Andrieu, B., Cervantes Barron, K., Heydari, M., Keshavarzzadeh, A., Cullen, J., In prep. ",
+                "Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country’s wealth is not associated with domestic control of metal ore extraction. Commun Earth Environ 6, 379 (2025).",
                 link,
             ]
         ),
