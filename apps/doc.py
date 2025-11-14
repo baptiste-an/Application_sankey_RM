@@ -29,7 +29,7 @@ text = dcc.Markdown(
     
     ##### Citation
 
-    Andrieu, B., Cervantes Barron, K., Heydari, M., Keshavarzzadeh, A., Cullen, J., In prep. https://www.refficiency.org/
+    Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country’s wealth is not associated with domestic control of metal ore extraction. Commun Earth Environ 6, 379 (2025). https://doi.org/10.1038/s43247-025-02321-1
     
     Lenzen, M., A. Geschke, M.D. Abd Rahman, Y. Xiao, J. Fry, R. Reyes, E. Dietzenbacher, S. Inomata, K. Kanemoto, B. Los, D. Moran, H. Schulte in den Bäumen, A. Tukker, T. Walmsley, T. Wiedmann, R. Wood and N. Yamano (2017) The Global MRIO Lab -charting the world economy. Economic Systems Research 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
 
