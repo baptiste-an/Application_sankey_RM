@@ -5,3 +5,4 @@ cache/
 *.pyc
 run_server.py
 index_offline.py
+apps/data/Results/Sankey_preprocessed/Commodity_old
