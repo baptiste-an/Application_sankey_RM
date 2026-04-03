@@ -1,127 +1,92 @@
-from dash import html, dcc
+﻿from dash import dcc, html
 import dash_bootstrap_components as dbc
-import pathlib
 from app import app
 
+PARTNERS = [
+    ("gloria.png", "https://ielab.info/resources/gloria/about", "GLORIA"),
+    ("rec.png", "https://www.refficiency.org/", "REfficiency"),
+    ("ccg.png", "https://climatecompatiblegrowth.com/", "CCG"),
+]
 
-DATA_PATH = pathlib.Path(__file__).parent.joinpath("data").resolve()
-
-
-text = dcc.Markdown(
+DOC_TEXT = dcc.Markdown(
     """
-    ##### Documentation
+## What this app contains
 
-    The goal of this project is to build sankey diagrams to map the value chains of metals. We build over 100,000 Sankey diagrams to visualize metal flows across 159 countries and 4 world regions, covering three key steps: mine owner nationality, extraction region, and final consumption region.
-    The first tab shows the sankeys with the production-based account and the consumption-based account. The second tab adds a mine ownership layer before the production-based account.
-    These diagrams are based on the GLORIA MRIO, available at https://ielab.info/, as well as on S&P Global data for mine ownership.
+This website provides interactive Sankey diagrams to explore global metal ore value chains.
 
-    ##### Code and figures downloads
+Main views:
 
-    The **code** used to calculate used to build the **sankeys** is available on github: https://github.com/baptiste-an/Mapping-metal-flows-sankeys.
+- **Footprint Explorer**: extraction-to-consumption pathways (without ownership layer)
+- **Ownership Explorer**: same pathways plus mine-owner nationality at the left-most stage
 
-    The **code** to build the **application** is based on: https://github.com/baptiste-an/Application-mapping-GHG.
+Data coverage in the publication setup includes many countries and years (2000-2022), with regional aggregation where needed.
 
-    The **sankey diagrams in svg format** can be downloaded from the FigShare folder associated with this publication.
-    
-    ##### Funding
+## Data and method
 
-    This paper associated with this publication has been produced under the Climate Compatible Growth (CCG) programme, which is funded by UK aid from the UK government. However, the views expressed herein do not necessarily reflect the UK government's official policies.
-    
-    ##### Citation
+The Sankey diagrams combine:
 
-    Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country’s wealth is not associated with domestic control of metal ore extraction. Commun Earth Environ 6, 379 (2025). https://doi.org/10.1038/s43247-025-02321-1
-    
-    Lenzen, M., A. Geschke, M.D. Abd Rahman, Y. Xiao, J. Fry, R. Reyes, E. Dietzenbacher, S. Inomata, K. Kanemoto, B. Los, D. Moran, H. Schulte in den Bäumen, A. Tukker, T. Walmsley, T. Wiedmann, R. Wood and N. Yamano (2017) The Global MRIO Lab -charting the world economy. Economic Systems Research 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
+- GLORIA MRIO data for production and consumption accounting
+- Mine ownership information from S&P Global sources used in the associated research workflow
 
-    Lenzen, M., A. Geschke, J. West, J. Fry, A. Malik, S. Giljum, L.M.i. Canals, P. Piñero, S. Lutter, T. Wiedmann, M. Li, M. Sevenster, J. Potočnik, I. Teixeira, M.V. Voore, K. Nansai and H. Schandl (2021) Implementing the Material Footprint to measure progress towards SDGs 8 and 12. Nature Sustainability. https://www.nature.com/articles/s41893-021-00811-6
+Interpretation logic follows the associated paper in *Communications Earth & Environment*.
 
+## Downloads and code
+
+- Sankey methodology/code repository: https://github.com/baptiste-an/Mapping-metal-flows-sankeys
+- Web app code base: https://github.com/baptiste-an/Application-mapping-GHG
+- Figure downloads (SVG): FigShare folder associated with the publication
+
+## Suggested citation
+
+Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country's wealth is not associated with domestic control of metal ore extraction. *Commun Earth Environ* 6, 379 (2025). https://doi.org/10.1038/s43247-025-02321-1
+
+Lenzen, M., A. Geschke, M.D. Abd Rahman, Y. Xiao, J. Fry, R. Reyes, E. Dietzenbacher, S. Inomata, K. Kanemoto, B. Los, D. Moran, H. Schulte in den Baeumen, A. Tukker, T. Walmsley, T. Wiedmann, R. Wood and N. Yamano (2017) The Global MRIO Lab - charting the world economy. *Economic Systems Research* 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
+
+Lenzen, M., A. Geschke, J. West, J. Fry, A. Malik, S. Giljum, L.M.i. Canals, P. Pinero, S. Lutter, T. Wiedmann, M. Li, M. Sevenster, J. Potocnik, I. Teixeira, M.V. Voore, K. Nansai and H. Schandl (2021) Implementing the Material Footprint to measure progress towards SDGs 8 and 12. *Nature Sustainability*. https://www.nature.com/articles/s41893-021-00811-6
+
+## Funding note
+
+This publication was produced under the Climate Compatible Growth (CCG) programme, funded by UK aid from the UK government. The views expressed do not necessarily reflect UK government policy.
 """
 )
 
-# *This text will be italic*
-# _This will also be italic_
-# **This text will be bold**
-# __This will also be bold__
-# _You **can** combine them_
-
-
 layout = dbc.Container(
     [
+        html.Section(
+            [
+                html.H2("Documentation and Downloads", className="page-head-title"),
+                html.P(
+                    "Methods, references, and access links for the Sankey application.",
+                    className="page-head-subtitle",
+                ),
+            ],
+            className="page-head reveal",
+        ),
         dbc.Row(
             [
                 dbc.Col(
-                    [
-                        html.A(
+                    html.A(
+                        html.Div(
                             html.Img(
-                                src=app.get_asset_url("gloria.png"),
-                                style={"height": 100, "justify": "center"},
+                                src=app.get_asset_url(img_name),
+                                alt=alt_text,
+                                className="partner-logo",
                             ),
-                            href="https://ielab.info/resources/gloria/about",
-                            target="_blank",
-                        )
-                    ],
-                    width=3,
-                ),
-                dbc.Col(
-                    [
-                        html.A(
-                            html.Img(
-                                src=app.get_asset_url("rec.png"),
-                                style={"height": 100, "justify": "center"},
-                            ),
-                            href="https://www.refficiency.org/",
-                            target="_blank",
-                        )
-                    ],
-                    width=3,
-                ),
-                dbc.Col(
-                    [
-                        html.A(
-                            html.Img(
-                                src=app.get_asset_url("ccg.png"),
-                                style={"height": 100, "justify": "center"},
-                            ),
-                            href="https://climatecompatiblegrowth.com/",
-                            target="_blank",
-                        )
-                    ],
-                    width=3,
-                ),
-                # dbc.Col(
-                #     [
-                #         html.A(
-                #             html.Img(src=app.get_asset_url("uga2.jpg"), style={"height": 100, "justify": "center"}),
-                #             href="https://www.univ-grenoble-alpes.fr/english/",
-                #             target="_blank",
-                #         )
-                #     ],
-                #     width=2,
-                # ),
+                            className="partner-card",
+                        ),
+                        href=url,
+                        target="_blank",
+                        className="partner-link",
+                    ),
+                    xs=12,
+                    md=4,
+                )
+                for img_name, url, alt_text in PARTNERS
             ],
-            justify="center",
+            class_name="g-3 partner-grid reveal",
         ),
-        html.Div(text, className="border", style={"fontSize": 13}),
-        # dbc.Row(
-        #     [
-        #         dbc.Col(
-        #             [
-        #                 html.A(
-        #                     html.Img(
-        #                         src=app.get_asset_url("exiobase.png"),
-        #                         style={"height": 100, "justify": "center"},
-        #                     ),
-        #                     href="https://www.exiobase.eu/",
-        #                     target="_blank",
-        #                 )
-        #             ],
-        #             width=6,
-        #         )
-        #     ],
-        #     justify="center",
-        # ),
-        # dbc.Row([dbc.Col([thanks], width=12)])
-        # html.Div(thanks, id="page-content"),
+        html.Div(DOC_TEXT, className="app-card info-card docs-card reveal"),
     ],
     fluid=True,
+    className="page-frame page-docs",
 )

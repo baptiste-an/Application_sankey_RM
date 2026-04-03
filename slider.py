@@ -22,7 +22,15 @@ class PlaybackSliderAIO(html.Div):
         slider_props = slider_props.copy() if slider_props else {}
         interval_props = interval_props.copy() if interval_props else {}
 
+        slider_props.setdefault("persistence", True)
+        slider_props.setdefault("persistence_type", "session")
         button_props["active"] = False
+        button_props["className"] = (
+            f"{button_props.get('className', '')} playback-trigger".strip()
+        )
+        slider_props["className"] = (
+            f"{slider_props.get('className', '')} playback-year-slider".strip()
+        )
 
         # super().__init__(
         #     [
@@ -62,19 +70,32 @@ class PlaybackSliderAIO(html.Div):
 
         super().__init__(
             [
-                dbc.Row(
+                html.Div(
                     [
-                        dbc.Col(
-                            dbc.Button(html.I(id=self.ids.play_icon(aio_id)), id=self.ids.play(aio_id), **button_props),
-                            width=1,
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    dbc.Button(
+                                        html.I(id=self.ids.play_icon(aio_id)),
+                                        id=self.ids.play(aio_id),
+                                        **button_props
+                                    ),
+                                    width="auto",
+                                ),
+                                dbc.Col(
+                                    html.P("Select year or press play", className="playback-hint"),
+                                ),
+                            ],
+                            align="center",
+                            class_name="playback-header",
                         ),
-                        dbc.Col(html.Div("Select year or press play")),
+                        dcc.Slider(id=self.ids.slider(aio_id), **slider_props),
+                        dcc.Interval(id=self.ids.interval(aio_id), **interval_props),
                     ],
-                    align="center",
+                    className="playback-slider-shell",
                 ),
-                dcc.Slider(id=self.ids.slider(aio_id), **slider_props),
-                dcc.Interval(id=self.ids.interval(aio_id), **interval_props),
-            ]
+            ],
+            className="playback-root",
         )
 
     @callback(

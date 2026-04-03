@@ -1,7 +1,3 @@
-"""
-Footprint explorer (non-ownership) with unified scope/detail controls.
-"""
-
 import json
 import lzma
 import pathlib
@@ -12,14 +8,8 @@ import numpy as np
 import plotly.graph_objs as go
 from dash import Input, Output, State, callback_context, dcc, html, no_update
 from dash.exceptions import PreventUpdate
-from flask_caching import Cache
 
 from app import app
-from slider import PlaybackSliderAIO
-
-cache = Cache(
-    app.server, config={"CACHE_TYPE": "FileSystemCache", "CACHE_DIR": "cache"}
-)
 
 DATA_PATH = pathlib.Path(__file__).parent.joinpath("data").resolve()
 DATA_ROOT = DATA_PATH.joinpath("Results", "Sankey_preprocessed")
@@ -33,8 +23,7 @@ SCOPE_LOCAL = "local"
 DETAIL_SUMMARY = "summary"
 DETAIL_DETAILED = "detailed"
 
-COMMODITY_OPTIONS = [
-    "All commodities",
+COMMODITIES = [
     "Copper ores",
     "Iron ores",
     "Nickel ores",
@@ -46,10 +35,6 @@ COMMODITY_OPTIONS = [
     "Gold ores",
     "Silver ores",
     "Aluminium ores",
-    "Chromium ores",
-    "Platinum ores",
-    "Titanium ores",
-    "Other metal ores",
 ]
 
 PALETTE_COLORS = [
@@ -81,30 +66,14 @@ LEGACY_COLOR_MAPPING = {
     "#ff8200": "#8C8C8C",
 }
 
-ALL_SIMPLE_GLOBAL_ALIASES = [
-    "All_commodities_simple global",
-    "All commodities simple global",
-]
-ALL_SIMPLE_LOCAL_ALIASES = [
-    "All_commodities_simple local",
-    "All commodities simple local",
-]
-COMMODITY_SIMPLE_GLOBAL_ALIASES = [
-    "Commodity simple global",
-    "Commodity_simple global",
-]
-COMMODITY_SIMPLE_LOCAL_ALIASES = [
-    "Commodity simple local",
-    "Commodity_simple local",
-]
-
-FIGURE_FONT = "Avenir Next, Segoe UI Variable Text, Trebuchet MS, Tahoma, sans-serif"
-
 with open(DATA_PATH.joinpath("dictreg.json"), encoding="utf-8") as f:
     REGIONS = json.loads(f.read())
+
 REGIONS.pop("DYE", None)
 REGIONS.pop("SDS", None)
 REGIONS["World"] = "World"
+
+FIGURE_FONT = "Avenir Next, Segoe UI Variable Text, Trebuchet MS, Tahoma, sans-serif"
 
 
 def _normalize_color(color_value):
@@ -128,6 +97,12 @@ def _effective_detail(scope, detail):
     return detail
 
 
+def _coerce_commodity(commodity):
+    if commodity in COMMODITIES:
+        return commodity
+    return "Copper ores"
+
+
 def _coerce_year(year):
     try:
         year = int(year)
@@ -148,17 +123,35 @@ def _coerce_unit(unit):
     return "kTonnes"
 
 
-def _coerce_commodity(commodity):
-    if commodity in COMMODITY_OPTIONS:
-        return commodity
-    return "Copper ores"
-
-
 def _sort_regions(regions):
     return sorted(regions, key=lambda item: (item != "World", REGIONS.get(item, item)))
 
 
-def _apply_figure_theme(fig, legend_y=-0.06, height=620):
+def _view_summary_text(scope, detail, commodity, region, year, unit):
+    scope = _coerce_scope(scope)
+    detail = _effective_detail(scope, detail)
+    commodity = _coerce_commodity(commodity)
+    region = _coerce_region(region)
+    year = _coerce_year(year)
+    unit = _coerce_unit(unit)
+
+    if scope == SCOPE_GLOBAL:
+        scope_line = "Global context: ownership, extraction, and downstream stages are shown in world context."
+    else:
+        scope_line = (
+            "Isolate region flows: a link is shown when it connects to the selected region "
+            "at ownership, extraction, or consumption stages."
+        )
+
+    detail_line = "Detail: 1-step consumption view." if detail == DETAIL_SUMMARY else "Detail: 3-step consumption view."
+    region_label = REGIONS.get(region, region)
+    return (
+        f"Current view: {scope_line} {detail_line} "
+        f"Selection: {commodity} | {region_label} ({region}) | {year} | {unit}."
+    )
+
+
+def _apply_figure_theme(fig, legend_y=-0.07, height=620):
     fig.update_layout(
         height=height,
         font={"family": FIGURE_FONT, "size": 12, "color": "#44372b"},
@@ -203,7 +196,22 @@ def _empty_figure(message):
         ],
         showlegend=False,
     )
-    return _apply_figure_theme(fig, legend_y=-0.06, height=620)
+    return _apply_figure_theme(fig, height=620)
+
+
+def _legend_names(region):
+    return [
+        "<b>Nationality of mine owners:</b>",
+        REGIONS.get(region, region),
+        "Africa",
+        "Asia-Pacific",
+        "EECCA",
+        "Europe",
+        "Latin America",
+        "Middle East",
+        "North America",
+        "Unknown",
+    ]
 
 
 def _create_legend_traces(colors, names):
@@ -220,122 +228,24 @@ def _create_legend_traces(colors, names):
     ]
 
 
-def _commodity_legend(region):
-    return {
-        "colors": ["white"] + list(PALETTE_COLORS[:8]),
-        "names": [
-            "<b>Region of ores extraction:</b>",
-            REGIONS.get(region, region),
-            "Africa",
-            "Asia-Pacific",
-            "EECCA",
-            "Europe",
-            "Latin America",
-            "Middle East",
-            "North America",
-        ],
-    }
-
-
-def _all_commodities_legend():
-    return {
-        "colors": ["white"] + list(PALETTE_COLORS[:8]),
-        "names": [
-            "<b>Metal ores:</b>",
-            "Aluminium ores",
-            "Chromium ores",
-            "Copper ores",
-            "Gold ores",
-            "Iron ores",
-            "Lead ores",
-            "Manganese ores",
-            "Nickel ores",
-        ],
-        "colors2": ["white"] + list(PALETTE_COLORS[8:15]),
-        "names2": [
-            " ",
-            "Other metal ores",
-            "Platinum ores",
-            "Silver ores",
-            "Tin ores",
-            "Titanium ores",
-            "Uranium ores",
-            "Zinc ores",
-        ],
-    }
-
-
-def _candidate_dirs(scope, detail, commodity):
+def _data_dir(scope, detail, commodity):
     scope = _coerce_scope(scope)
     detail = _effective_detail(scope, detail)
     commodity = _coerce_commodity(commodity)
-    all_commodities = commodity == "All commodities"
-
-    if scope == SCOPE_GLOBAL and detail == DETAIL_SUMMARY:
-        aliases = ALL_SIMPLE_GLOBAL_ALIASES if all_commodities else COMMODITY_SIMPLE_GLOBAL_ALIASES
-    elif scope == SCOPE_LOCAL and detail == DETAIL_SUMMARY:
-        aliases = ALL_SIMPLE_LOCAL_ALIASES if all_commodities else COMMODITY_SIMPLE_LOCAL_ALIASES
-    elif scope == SCOPE_LOCAL and detail == DETAIL_DETAILED:
-        aliases = ["All commodities"] if all_commodities else ["Commodity"]
-    else:
-        aliases = ["All commodities"] if all_commodities else ["Commodity"]
-
-    dirs = []
-    for alias in aliases:
-        base = DATA_ROOT.joinpath(alias)
-        dirs.append(base if all_commodities else base.joinpath(commodity))
-    return dirs
-
-
-def _resolve_existing_dir(scope, detail, commodity):
-    candidates = _candidate_dirs(scope, detail, commodity)
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[0]
-
-
-def _dataset_mode_label(scope, detail):
-    scope = _coerce_scope(scope)
-    detail = _effective_detail(scope, detail)
-    if scope == SCOPE_GLOBAL:
-        return "global context, 1-step"
-    if detail == DETAIL_SUMMARY:
-        return "isolate region flows, 1-step"
-    return "isolate region flows, 3-step"
-
-
-def _view_summary_text(scope, detail, commodity, region, year, unit):
-    scope = _coerce_scope(scope)
-    detail = _effective_detail(scope, detail)
-    commodity = _coerce_commodity(commodity)
-    region = _coerce_region(region)
-    year = _coerce_year(year)
-    unit = _coerce_unit(unit)
 
     if scope == SCOPE_GLOBAL:
-        scope_line = "Global context: world system visible around your selected region."
-    else:
-        scope_line = (
-            "Isolate region flows: a link is shown when it connects to the selected region "
-            "at extraction or consumption stages."
-        )
-
-    detail_line = "Detail: 1-step consumption view." if detail == DETAIL_SUMMARY else "Detail: 3-step consumption view."
-    region_label = REGIONS.get(region, region)
-    return (
-        f"Current view: {scope_line} {detail_line} "
-        f"Selection: {commodity} | {region_label} ({region}) | {year} | {unit}."
-    )
+        return DATA_ROOT.joinpath("Ownership simple global", commodity), "simple"
+    if detail == DETAIL_DETAILED:
+        return DATA_ROOT.joinpath("Commodity all ownership", commodity), "detailed"
+    return DATA_ROOT.joinpath("Ownership simple local", commodity), "simple"
 
 
 def _regions_for_selection(scope, detail, commodity, year):
     year = _coerce_year(year)
-    data_dir = _resolve_existing_dir(scope, detail, commodity)
+    commodity_dir, _ = _data_dir(scope, detail, commodity)
     regions = set()
-
-    if data_dir.exists():
-        for file_path in data_dir.glob(f"*_{year}.pkl.lzma"):
+    if commodity_dir.exists():
+        for file_path in commodity_dir.glob(f"*_{year}.pkl.lzma"):
             stem = file_path.name[: -len(".pkl.lzma")]
             if "_" not in stem:
                 continue
@@ -348,23 +258,28 @@ def _regions_for_selection(scope, detail, commodity, year):
 
 
 def _load_preprocessed(scope, detail, commodity, region, year):
-    data_dir = _resolve_existing_dir(scope, detail, commodity)
-    data_path = data_dir.joinpath(f"{region}_{year}.pkl.lzma")
-    with lzma.open(data_path, "rb") as f:
+    commodity_dir, mode_kind = _data_dir(scope, detail, commodity)
+    preprocessed_data_path = commodity_dir.joinpath(f"{region}_{year}.pkl.lzma")
+    with lzma.open(preprocessed_data_path, "rb") as f:
         preprocessed_data = pickle.load(f)
-    return preprocessed_data, data_path
+    return preprocessed_data, mode_kind
 
 
-@cache.memoize()
-def _build_figure(scope, detail, region, year, unit, commodity):
+def _build_figure(scope, detail, commodity, region, year, unit):
     scope = _coerce_scope(scope)
     detail = _effective_detail(scope, detail)
+    commodity = _coerce_commodity(commodity)
     region = _coerce_region(region)
     year = _coerce_year(year)
     unit = _coerce_unit(unit)
-    commodity = _coerce_commodity(commodity)
 
-    preprocessed_data, _ = _load_preprocessed(scope, detail, commodity, region, year)
+    preprocessed_data, mode_kind = _load_preprocessed(
+        scope=scope,
+        detail=detail,
+        commodity=commodity,
+        region=region,
+        year=year,
+    )
 
     sankey = (
         preprocessed_data["sankey_cap"]
@@ -373,6 +288,11 @@ def _build_figure(scope, detail, region, year, unit, commodity):
     )
     layout = preprocessed_data["layout"]
     arrows_and_labels = preprocessed_data["arrows_and_labels"]
+
+    if mode_kind == "simple":
+        for ann in arrows_and_labels.get("annotations", []):
+            if "Nationality of mine owners" in ann.get("text", ""):
+                ann["x"] = min(1, ann.get("x", 0) + 0.03)
 
     sankey["link"]["color"] = np.array([_normalize_color(c) for c in sankey["link"]["color"]])
 
@@ -383,45 +303,23 @@ def _build_figure(scope, detail, region, year, unit, commodity):
         annotations=arrows_and_labels.get("annotations", []),
     )
 
-    if commodity == "All commodities":
-        legend = _all_commodities_legend()
-        fig.add_traces(_create_legend_traces(legend["colors"], legend["names"]))
-        fig.add_traces(_create_legend_traces(legend["colors2"], legend["names2"]))
-        legend_y = -0.11
-    else:
-        legend = _commodity_legend(region)
-        fig.add_traces(_create_legend_traces(legend["colors"], legend["names"]))
-        legend_y = -0.06
-
+    legend_colors = ["white"] + list(PALETTE_COLORS[:9])
+    fig.add_traces(_create_legend_traces(legend_colors, _legend_names(region)))
     fig.update_layout(showlegend=True)
-    return _apply_figure_theme(fig, legend_y=legend_y, height=620)
 
-
-def fig_sankey(region, year, unit="kTonnes", sankey_subtype="Copper ores"):
-    """
-    Backward-compatible helper used by landing examples.
-    Keeps the historical non-ownership detailed behavior.
-    """
-    try:
-        return _build_figure(
-            scope=SCOPE_LOCAL,
-            detail=DETAIL_DETAILED,
-            region=region,
-            year=year,
-            unit=unit,
-            commodity=sankey_subtype,
-        )
-    except FileNotFoundError:
-        return _empty_figure("No preprocessed Sankey file found for this selection.")
+    return _apply_figure_theme(fig, legend_y=-0.08, height=620)
 
 
 DEFAULT_SCOPE = SCOPE_GLOBAL
 DEFAULT_DETAIL = DETAIL_SUMMARY
-DEFAULT_COMMODITY = "All commodities"
+DEFAULT_COMMODITY = _coerce_commodity("Copper ores")
 DEFAULT_YEAR = YEAR_DEFAULT
 DEFAULT_UNIT = "kTonnes"
 _default_regions = _regions_for_selection(
-    DEFAULT_SCOPE, DEFAULT_DETAIL, DEFAULT_COMMODITY, DEFAULT_YEAR
+    DEFAULT_SCOPE,
+    DEFAULT_DETAIL,
+    DEFAULT_COMMODITY,
+    DEFAULT_YEAR,
 )
 DEFAULT_REGION = "World" if "World" in _default_regions else _default_regions[0]
 
@@ -429,10 +327,10 @@ try:
     INITIAL_FIGURE = _build_figure(
         scope=DEFAULT_SCOPE,
         detail=DEFAULT_DETAIL,
+        commodity=DEFAULT_COMMODITY,
         region=DEFAULT_REGION,
         year=DEFAULT_YEAR,
         unit=DEFAULT_UNIT,
-        commodity=DEFAULT_COMMODITY,
     )
 except Exception:
     INITIAL_FIGURE = _empty_figure("No preprocessed Sankey file found for this selection.")
@@ -450,13 +348,14 @@ Data source and method:
 - Lenzen, M. et al. (2017). *The Global MRIO Lab - charting the world economy*. Economic Systems Research, 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
 """
 
+
 layout = dbc.Container(
     [
         html.Section(
             [
-                html.H2("Footprint Explorer", className="page-head-title"),
+                html.H2("Ownership Explorer", className="page-head-title"),
                 html.P(
-                    "Explore non-ownership flows in one workspace, from global context to focal-region detail.",
+                    "Use one chart workspace for both global context and focal-country analysis.",
                     className="page-head-subtitle",
                 ),
             ],
@@ -465,10 +364,10 @@ layout = dbc.Container(
         html.Div(
             dcc.Markdown(
                 """
-Choose how much context and detail you need:
+Choose how much context you want:
 
-- **Global context** keeps a world-wide view around the selected region.
-- **Isolate region flows** keeps a link if it connects to the selected region at extraction or consumption stages.
+- **Global context** keeps the full world system visible and highlights the selected region within it.
+- **Isolate region flows** keeps a link if it connects to the selected region at ownership, extraction, or consumption stages.
 - **1-step CBA detail** aggregates the consumption side into one downstream stage.
 - **3-step CBA detail** splits the consumption side into three downstream stages.
 - Colors are assigned at the first stage and preserved along the chain.
@@ -483,8 +382,8 @@ Choose how much context and detail you need:
                         dbc.Col(
                             html.Div(
                                 [
-                                    html.H4("1. Pick scope"),
-                                    html.P("Use global for broad context, or isolate for region-focused reading."),
+                                    html.H4("1. Start with scope"),
+                                    html.P("Global gives system context. Isolate gives a focused region story."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -494,8 +393,8 @@ Choose how much context and detail you need:
                         dbc.Col(
                             html.Div(
                                 [
-                                    html.H4("2. Pick detail"),
-                                    html.P("In isolate mode, switch from 1-step to 3-step to increase consumption detail."),
+                                    html.H4("2. Add detail"),
+                                    html.P("In isolate mode, switch to 3-step when you need finer interpretation."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -505,8 +404,8 @@ Choose how much context and detail you need:
                         dbc.Col(
                             html.Div(
                                 [
-                                    html.H4("3. Read left to right"),
-                                    html.P("Interpret widths in the same chart first, then compare across years."),
+                                    html.H4("3. Interpret ownership"),
+                                    html.P("The left-most stage is mine-owner nationality before extraction."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -530,7 +429,7 @@ Choose how much context and detail you need:
                         DEFAULT_YEAR,
                         DEFAULT_UNIT,
                     ),
-                    id="footprint-view-summary",
+                    id="ownership-view-summary",
                     className="view-summary",
                 ),
                 dbc.Row(
@@ -540,10 +439,16 @@ Choose how much context and detail you need:
                                 [
                                     html.P("View scope", className="control-label"),
                                     dbc.RadioItems(
-                                        id="footprint-explorer-scope",
+                                        id="ownership-explorer-scope",
                                         options=[
-                                            {"label": "Global context", "value": SCOPE_GLOBAL},
-                                            {"label": "Isolate region flows", "value": SCOPE_LOCAL},
+                                            {
+                                                "label": "Global context",
+                                                "value": SCOPE_GLOBAL,
+                                            },
+                                            {
+                                                "label": "Isolate region flows",
+                                                "value": SCOPE_LOCAL,
+                                            },
                                         ],
                                         value=DEFAULT_SCOPE,
                                         inline=True,
@@ -555,7 +460,7 @@ Choose how much context and detail you need:
                                 className="control-field",
                             ),
                             width=12,
-                        )
+                        ),
                     ],
                     class_name="g-3",
                 ),
@@ -569,7 +474,7 @@ Choose how much context and detail you need:
                                         className="control-label",
                                     ),
                                     dbc.RadioItems(
-                                        id="footprint-explorer-detail",
+                                        id="ownership-explorer-detail",
                                         options=[
                                             {
                                                 "label": "1-step consumption view",
@@ -588,7 +493,7 @@ Choose how much context and detail you need:
                                     ),
                                 ],
                                 className="control-field",
-                                id="footprint-explorer-detail-wrap",
+                                id="ownership-explorer-detail-wrap",
                             ),
                             width=12,
                         ),
@@ -602,11 +507,14 @@ Choose how much context and detail you need:
                                 [
                                     html.P("Commodity", className="control-label"),
                                     dcc.Dropdown(
-                                        id="slct_subtype_2",
-                                        options=COMMODITY_OPTIONS,
+                                        id="ownership-explorer-commodity",
+                                        options=[
+                                            {"label": commodity, "value": commodity}
+                                            for commodity in COMMODITIES
+                                        ],
                                         value=DEFAULT_COMMODITY,
-                                        multi=False,
                                         clearable=False,
+                                        multi=False,
                                         persistence=True,
                                         persistence_type="session",
                                         className="dash-dropdown",
@@ -622,14 +530,17 @@ Choose how much context and detail you need:
                                 [
                                     html.P("Region", className="control-label"),
                                     dcc.Dropdown(
-                                        id="slct2_2",
+                                        id="ownership-explorer-region",
                                         options=[
-                                            {"label": REGIONS.get(r, r), "value": r}
-                                            for r in _default_regions
+                                            {
+                                                "label": REGIONS.get(region, region),
+                                                "value": region,
+                                            }
+                                            for region in _default_regions
                                         ],
                                         value=DEFAULT_REGION,
-                                        multi=False,
                                         clearable=False,
+                                        multi=False,
                                         persistence=True,
                                         persistence_type="session",
                                         className="dash-dropdown",
@@ -645,11 +556,11 @@ Choose how much context and detail you need:
                                 [
                                     html.P("Unit", className="control-label"),
                                     dcc.Dropdown(
-                                        id="slct_unit_2",
+                                        id="ownership-explorer-unit",
                                         options=["kTonnes", "Tonnes per capita"],
                                         value=DEFAULT_UNIT,
-                                        multi=False,
                                         clearable=False,
+                                        multi=False,
                                         persistence=True,
                                         persistence_type="session",
                                         className="dash-dropdown",
@@ -663,15 +574,52 @@ Choose how much context and detail you need:
                     ],
                     class_name="g-3 mt-1",
                 ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.Div(
+                                [
+                                    html.P("Data year", className="control-label"),
+                                    html.Div(
+                                        id="ownership-explorer-year-label",
+                                        className="control-value-label",
+                                        children=f"Data year: {DEFAULT_YEAR}",
+                                    ),
+                                    dcc.Slider(
+                                        id="ownership-explorer-year",
+                                        min=YEAR_MIN,
+                                        max=YEAR_MAX,
+                                        step=1,
+                                        value=DEFAULT_YEAR,
+                                        marks={
+                                            str(year): str(year)
+                                            for year in range(YEAR_MIN, YEAR_MAX + 1, 2)
+                                        },
+                                        tooltip={
+                                            "placement": "bottom",
+                                            "always_visible": False,
+                                        },
+                                        persistence=True,
+                                        persistence_type="session",
+                                        className="themed-slider",
+                                    ),
+                                ],
+                                className="control-field",
+                            ),
+                            width=12,
+                        ),
+                    ],
+                    class_name="g-3 mt-1",
+                ),
             ],
             className="app-card controls-card reveal",
         ),
         html.Div(
             [
                 dcc.Graph(
-                    id="graph2_2",
-                    responsive=True,
+                    id="ownership-explorer-graph",
                     figure=INITIAL_FIGURE,
+                    responsive=True,
                     className="themed-graph",
                     style={"height": "620px", "width": "100%"},
                 )
@@ -679,28 +627,9 @@ Choose how much context and detail you need:
             className="app-card graph-card reveal",
         ),
         html.Div(
-            [
-                PlaybackSliderAIO(
-                    aio_id="bruh2_2",
-                    slider_props={
-                        "min": YEAR_MIN,
-                        "max": YEAR_MAX,
-                        "step": 1,
-                        "value": DEFAULT_YEAR,
-                        "marks": {str(year): str(year) for year in range(YEAR_MIN, YEAR_MAX + 1, 1)},
-                        "persistence": True,
-                        "persistence_type": "session",
-                    },
-                    button_props={"className": "float-left"},
-                    interval_props={"interval": 2500},
-                )
-            ],
-            className="app-card slider-card reveal",
-        ),
-        html.Div(
             dcc.Markdown(
-                "Interpretation order: start in **Global context**, then switch to **Isolate region flows**, "
-                "then increase from **1-step** to **3-step** CBA detail when needed."
+                "Read this as: owner nationality (left) -> extraction -> downstream consumption stages. "
+                "Use **Global context** first, then **Isolate region flows** for country-focused analysis."
             ),
             className="app-card info-card slim-card reveal",
         ),
@@ -710,15 +639,15 @@ Choose how much context and detail you need:
         ),
     ],
     fluid=True,
-    className="page-frame page-commodity",
+    className="page-frame page-ownership-explorer",
 )
 
 
 @app.callback(
-    Output("footprint-explorer-detail-wrap", "style"),
-    Output("footprint-explorer-detail", "value"),
-    Input("footprint-explorer-scope", "value"),
-    State("footprint-explorer-detail", "value"),
+    Output("ownership-explorer-detail-wrap", "style"),
+    Output("ownership-explorer-detail", "value"),
+    Input("ownership-explorer-scope", "value"),
+    State("ownership-explorer-detail", "value"),
 )
 def toggle_detail_control(scope, detail_value):
     scope = _coerce_scope(scope)
@@ -729,13 +658,13 @@ def toggle_detail_control(scope, detail_value):
 
 
 @app.callback(
-    Output("slct2_2", "options"),
-    Output("slct2_2", "value"),
-    Input("footprint-explorer-scope", "value"),
-    Input("footprint-explorer-detail", "value"),
-    Input("slct_subtype_2", "value"),
-    Input(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    State("slct2_2", "value"),
+    Output("ownership-explorer-region", "options"),
+    Output("ownership-explorer-region", "value"),
+    Input("ownership-explorer-scope", "value"),
+    Input("ownership-explorer-detail", "value"),
+    Input("ownership-explorer-commodity", "value"),
+    Input("ownership-explorer-year", "value"),
+    State("ownership-explorer-region", "value"),
 )
 def update_region_options(scope, detail, commodity, year, current_region):
     scope = _coerce_scope(scope)
@@ -756,36 +685,44 @@ def update_region_options(scope, detail, commodity, year, current_region):
 
 
 @app.callback(
-    Output("footprint-view-summary", "children"),
-    Input("footprint-explorer-scope", "value"),
-    Input("footprint-explorer-detail", "value"),
-    Input("slct_subtype_2", "value"),
-    Input("slct2_2", "value"),
-    Input(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    Input("slct_unit_2", "value"),
+    Output("ownership-explorer-year-label", "children"),
+    Input("ownership-explorer-year", "value"),
+)
+def update_year_label(year):
+    return f"Data year: {_coerce_year(year)}"
+
+
+@app.callback(
+    Output("ownership-view-summary", "children"),
+    Input("ownership-explorer-scope", "value"),
+    Input("ownership-explorer-detail", "value"),
+    Input("ownership-explorer-commodity", "value"),
+    Input("ownership-explorer-region", "value"),
+    Input("ownership-explorer-year", "value"),
+    Input("ownership-explorer-unit", "value"),
 )
 def update_view_summary(scope, detail, commodity, region, year, unit):
     return _view_summary_text(scope, detail, commodity, region, year, unit)
 
 
 @app.callback(
-    Output("graph2_2", "figure"),
-    Input("footprint-explorer-scope", "value"),
-    Input("footprint-explorer-detail", "value"),
-    Input("slct2_2", "value"),
-    Input(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    Input("slct_unit_2", "value"),
-    Input("slct_subtype_2", "value"),
+    Output("ownership-explorer-graph", "figure"),
+    Input("ownership-explorer-scope", "value"),
+    Input("ownership-explorer-detail", "value"),
+    Input("ownership-explorer-commodity", "value"),
+    Input("ownership-explorer-region", "value"),
+    Input("ownership-explorer-year", "value"),
+    Input("ownership-explorer-unit", "value"),
 )
-def update_figure(scope, detail, region, year, unit, commodity):
+def update_figure(scope, detail, commodity, region, year, unit):
     scope = _coerce_scope(scope)
     detail = _effective_detail(scope, detail)
-    region = _coerce_region(region)
+    commodity = _coerce_commodity(commodity)
     year = _coerce_year(year)
     unit = _coerce_unit(unit)
-    commodity = _coerce_commodity(commodity)
 
     regions = _regions_for_selection(scope, detail, commodity, year)
+    region = _coerce_region(region)
     if region not in regions:
         region = "World" if "World" in regions else regions[0]
 
@@ -793,69 +730,71 @@ def update_figure(scope, detail, region, year, unit, commodity):
         return _build_figure(
             scope=scope,
             detail=detail,
+            commodity=commodity,
             region=region,
             year=year,
             unit=unit,
-            commodity=commodity,
         )
     except FileNotFoundError:
-        mode_label = _dataset_mode_label(scope, detail)
-        return _empty_figure(
-            "No preprocessed Sankey file found for "
-            f"{mode_label} | {commodity} | {region} | {year}."
-        )
+        if scope == SCOPE_GLOBAL:
+            mode_msg = "global context"
+        elif detail == DETAIL_DETAILED:
+            mode_msg = "isolated region with 3-step consumption"
+        else:
+            mode_msg = "isolated region with 1-step consumption"
+        return _empty_figure(f"No preprocessed Sankey file found for {mode_msg}.")
 
 
 @app.callback(
-    Output("slct2_2", "value"),
-    Output(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    Output("slct_unit_2", "value"),
-    Output("slct_subtype_2", "value"),
+    Output("ownership-explorer-commodity", "value"),
+    Output("ownership-explorer-year", "value"),
+    Output("ownership-explorer-region", "value"),
+    Output("ownership-explorer-unit", "value"),
     Input("tabs", "active_tab"),
-    State("shared-region-store", "data"),
-    State("shared-year-store", "data"),
-    State("shared-unit-store", "data"),
     State("shared-commodity-store", "data"),
+    State("shared-year-store", "data"),
+    State("shared-region-store", "data"),
+    State("shared-unit-store", "data"),
     prevent_initial_call=True,
 )
-def apply_shared_selection(active_tab, region, year, unit, commodity):
-    if active_tab != "tab-3":
+def apply_shared_selection(active_tab, commodity, year, region, unit):
+    if active_tab != "tab-1":
         raise PreventUpdate
 
     return (
-        _coerce_region(region),
-        _coerce_year(year),
-        _coerce_unit(unit),
         _coerce_commodity(commodity),
+        _coerce_year(year),
+        _coerce_region(region),
+        _coerce_unit(unit),
     )
 
 
 @app.callback(
-    Output("shared-region-store", "data", allow_duplicate=True),
-    Output("shared-year-store", "data", allow_duplicate=True),
-    Output("shared-unit-store", "data", allow_duplicate=True),
     Output("shared-commodity-store", "data", allow_duplicate=True),
-    Input("slct2_2", "value"),
-    Input(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    Input("slct_unit_2", "value"),
-    Input("slct_subtype_2", "value"),
+    Output("shared-year-store", "data", allow_duplicate=True),
+    Output("shared-region-store", "data", allow_duplicate=True),
+    Output("shared-unit-store", "data", allow_duplicate=True),
+    Input("ownership-explorer-commodity", "value"),
+    Input("ownership-explorer-year", "value"),
+    Input("ownership-explorer-region", "value"),
+    Input("ownership-explorer-unit", "value"),
     prevent_initial_call=True,
 )
-def persist_shared_selection(region, year, unit, commodity):
+def persist_shared_selection(commodity, year, region, unit):
     triggered = callback_context.triggered_id
 
-    region_out = no_update
-    year_out = no_update
-    unit_out = no_update
     commodity_out = no_update
+    year_out = no_update
+    region_out = no_update
+    unit_out = no_update
 
-    if triggered == "slct2_2":
-        region_out = _coerce_region(region)
-    elif isinstance(triggered, dict) and triggered.get("subcomponent") == "slider":
-        year_out = _coerce_year(year)
-    elif triggered == "slct_unit_2":
-        unit_out = _coerce_unit(unit)
-    elif triggered == "slct_subtype_2":
+    if triggered == "ownership-explorer-commodity":
         commodity_out = _coerce_commodity(commodity)
+    elif triggered == "ownership-explorer-year":
+        year_out = _coerce_year(year)
+    elif triggered == "ownership-explorer-region":
+        region_out = _coerce_region(region)
+    elif triggered == "ownership-explorer-unit":
+        unit_out = _coerce_unit(unit)
 
-    return region_out, year_out, unit_out, commodity_out
+    return commodity_out, year_out, region_out, unit_out
