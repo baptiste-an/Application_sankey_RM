@@ -232,7 +232,7 @@ def _guided_case_reason(region_code):
 def _build_real_examples(region, year):
     return {
         "footprint_global_1step": _safe_figure(
-            "Step 1: Footprint Explorer | Global context + PBA + 1 CBA step (All commodities)",
+            "Step 1: Footprint Explorer | Global view, all commodities, one consumption stage",
             lambda: commodity_view._build_figure(
                 scope="global",
                 detail="summary",
@@ -243,7 +243,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "footprint_local_1step": _safe_figure(
-            "Step 2: Footprint Explorer | Isolate region flows + PBA + 1 CBA step (All commodities)",
+            "Step 2: Footprint Explorer | Region-focused view, all commodities, one consumption stage",
             lambda: commodity_view._build_figure(
                 scope="local",
                 detail="summary",
@@ -254,7 +254,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "footprint_local_1step_commodity": _safe_figure(
-            f"Step 3: Footprint Explorer | Isolate region flows + PBA + 1 CBA step ({EXAMPLE_COMMODITY})",
+            f"Step 3: Footprint Explorer | Region-focused view, {EXAMPLE_COMMODITY}, one consumption stage",
             lambda: commodity_view._build_figure(
                 scope="local",
                 detail="summary",
@@ -265,7 +265,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "footprint_local_3step": _safe_figure(
-            f"Step 4: Footprint Explorer | Isolate region flows + PBA + 3 CBA steps ({EXAMPLE_COMMODITY})",
+            f"Step 4: Footprint Explorer | Region-focused view, {EXAMPLE_COMMODITY}, three consumption stages",
             lambda: commodity_view._build_figure(
                 scope="local",
                 detail="detailed",
@@ -276,7 +276,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "ownership_global_1step": _safe_figure(
-            f"Step 5: Ownership Explorer | Global context + PBA + 1 CBA step ({EXAMPLE_COMMODITY})",
+            f"Step 5: Ownership Explorer | Add owner layer, global view, one consumption stage ({EXAMPLE_COMMODITY})",
             lambda: ownership_view._build_figure(
                 scope="global",
                 detail="summary",
@@ -287,7 +287,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "ownership_local_1step": _safe_figure(
-            f"Step 6: Ownership Explorer | Isolate region flows + PBA + 1 CBA step ({EXAMPLE_COMMODITY})",
+            f"Step 6: Ownership Explorer | Add owner layer, region-focused view, one consumption stage ({EXAMPLE_COMMODITY})",
             lambda: ownership_view._build_figure(
                 scope="local",
                 detail="summary",
@@ -298,7 +298,7 @@ def _build_real_examples(region, year):
             ),
         ),
         "ownership_local_3step": _safe_figure(
-            f"Step 7: Ownership Explorer | Isolate region flows + PBA + 3 CBA steps ({EXAMPLE_COMMODITY})",
+            f"Step 7: Ownership Explorer | Add owner layer, region-focused view, three consumption stages ({EXAMPLE_COMMODITY})",
             lambda: ownership_view._build_figure(
                 scope="local",
                 detail="detailed",
@@ -389,11 +389,19 @@ The objective is to compare, for each region and year:
                 """
 ## Core accounting concepts
 
+PBA means **Production-Based Account** and CBA means **Consumption-Based Account**.
+
 - **Production-based account (PBA):** attributes flows to the region where extraction/production occurs.
 - **Consumption-based account (CBA):** attributes flows to the region where final demand is located.
 - **Ownership extension:** inserts mine-owner nationality as an additional first stage before extraction.
 
-In this app, you can read these perspectives side-by-side by switching between the Footprint and Ownership tabs.
+Plain-language translation:
+
+- PBA answers: "where was the material extracted?"
+- CBA answers: "where was the material finally used?"
+- Ownership extension answers: "who controls the extraction assets?"
+
+In this app, you can compare these perspectives side-by-side by switching between the Footprint and Ownership tabs.
 """
             ),
             className="app-card info-card reveal",
@@ -446,12 +454,11 @@ so each colored path can be tracked across downstream stages.
                 """
 ## Scope and detail controls used in both explorer tabs
 
-- **Global context:** keep the full world system visible around the selected region.
-- **Isolate region flows:** retain a link if it is connected to the selected region at **any** key stage
-  (owner stage where applicable, extraction stage, or consumption stage).
-- **1-step CBA detail:** aggregates the consumption side into one downstream stage.
-- **3-step CBA detail:** disaggregates the consumption side into three downstream stages for finer interpretation.
-- **PBA + 1 CBA step (used in several guided steps):** one extraction stage followed by one aggregated consumption stage.
+- **Global view:** keeps the full world system visible around the selected region.
+- **Region-focused view:** keeps only links connected to the selected region
+  (at the owner stage where shown, extraction stage, or final-consumption stage).
+- **One consumption stage:** the right side of the chart is shown as one combined final-use block.
+- **Three consumption stages:** the right side is split into three stages for more detail.
 """
             ),
             className="app-card info-card reveal",
@@ -558,84 +565,95 @@ Why this case:
                 f"""
 ## Recommended reading sequence
 
-1. Footprint Explorer, global context, 1-step (`All commodities`).
-2. Footprint Explorer, isolate region flows, 1-step (`All commodities`).
-3. Footprint Explorer, isolate region flows, 1-step (`{EXAMPLE_COMMODITY}`).
-4. Footprint Explorer, isolate region flows, 3-step (`{EXAMPLE_COMMODITY}`).
-5. Ownership Explorer, global context, 1-step (`{EXAMPLE_COMMODITY}`).
-6. Ownership Explorer, isolate region flows, 1-step (`{EXAMPLE_COMMODITY}`).
-7. Ownership Explorer, isolate region flows, 3-step (`{EXAMPLE_COMMODITY}`).
+All seven steps use the same selected region and year shown above; each step changes only one setting at a time.
+
+1. Start with a full-world view (`All commodities`).
+2. Keep `All commodities`, but switch to a region-focused view.
+3. Keep the same region-focused view, and switch commodity to `{EXAMPLE_COMMODITY}`.
+4. Keep `{EXAMPLE_COMMODITY}` and split the consumption side into three stages.
+5. Add mine-owner information while returning to a full-world view.
+6. Keep owner information, and switch back to a region-focused view.
+7. Keep owner information and region-focused view, and split consumption into three stages.
 """
             ),
             className="app-card info-card reveal",
         ),
         _step_block(
             "landing-footprint-global-1step",
-            """
-## Step 1. Footprint Explorer: Global context + PBA + 1 CBA step (All commodities)
+            f"""
+## Step 1. Footprint Explorer: Global view, all commodities, one consumption stage
 
-This view has one production-side stage (`Extraction`) and one aggregated consumption-side stage (`Consumption`): this is what **PBA + 1 CBA step** means here.
-Use it as the baseline map of the world system before any regional filtering.
+Selected case for this guide: **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+This first chart keeps the full world visible. It combines all metal commodities, with one extraction stage on the left and one final-consumption stage on the right.
+Use this as your baseline: identify the largest links before we apply any filtering.
 """,
             EXAMPLE_FIGURES["footprint_global_1step"],
         ),
         _step_block(
             "landing-footprint-local-1step",
-            """
-## Step 2. Footprint Explorer: Isolate region flows + PBA + 1 CBA step (All commodities)
+            f"""
+## Step 2. Footprint Explorer: Region-focused view, all commodities, one consumption stage
 
-Keep exactly the same stage structure as Step 1, but change only the scope to **Isolate region flows**.
-In isolate mode, a link is retained only if the selected region appears at extraction or consumption stages.
+Region and year are still **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Compared with Step 1, the only change is the scope: now we keep only links connected to {GUIDE_REGION_LABEL}
+as an extraction location or as a final-consumption location.
+This helps you see which part of the global system is directly linked to the selected region.
 """,
             EXAMPLE_FIGURES["footprint_local_1step"],
         ),
         _step_block(
             "landing-footprint-local-1step-commodity",
             f"""
-## Step 3. Footprint Explorer: Isolate region flows + PBA + 1 CBA step ({EXAMPLE_COMMODITY})
+## Step 3. Footprint Explorer: Region-focused view, {EXAMPLE_COMMODITY}, one consumption stage
 
-Keep the same isolate scope and same 1-step structure as Step 2, and change only the commodity from `All commodities` to `{EXAMPLE_COMMODITY}`.
-This isolates the effect of commodity selection before increasing structural detail.
+Region and year remain **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Keep the same region-focused scope as Step 2, and change only one setting: commodity moves from `All commodities`
+to `{EXAMPLE_COMMODITY}`.
+Compare Step 2 and Step 3 to see what is specific to `{EXAMPLE_COMMODITY}` versus the full mix of commodities.
 """,
             EXAMPLE_FIGURES["footprint_local_1step_commodity"],
         ),
         _step_block(
             "landing-footprint-local-3step",
             f"""
-## Step 4. Footprint Explorer: Isolate region flows + PBA + 3 CBA steps ({EXAMPLE_COMMODITY})
+## Step 4. Footprint Explorer: Region-focused view, {EXAMPLE_COMMODITY}, three consumption stages
 
-Keep region, scope, and commodity fixed, and expand the consumption side from one aggregated CBA stage to three downstream CBA stages.
-This reveals how the same total flow is distributed across the finer consumption pathway.
+Region and year remain **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Keep the same commodity and scope as Step 3, and split the right side from one consumption block into three stages.
+This gives a more detailed reading of where the same `{EXAMPLE_COMMODITY}` flow ends up.
 """,
             EXAMPLE_FIGURES["footprint_local_3step"],
         ),
         _step_block(
             "landing-ownership-global-1step",
             f"""
-## Step 5. Ownership Explorer: Global context + PBA + 1 CBA step ({EXAMPLE_COMMODITY})
+## Step 5. Ownership Explorer: Add owner layer, global view, one consumption stage ({EXAMPLE_COMMODITY})
 
-Move to Ownership Explorer while keeping global context and 1-step consumption detail.
-The new left-most stage is owner nationality, then extraction (PBA), then one aggregated consumption stage (CBA).
+Region and year remain **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Compared with Step 4, we switch to the Ownership Explorer and return to a full-world view with one consumption stage.
+The new left-most column shows where mine owners are based, before extraction and final consumption.
 """,
             EXAMPLE_FIGURES["ownership_global_1step"],
         ),
         _step_block(
             "landing-ownership-local-1step",
             f"""
-## Step 6. Ownership Explorer: Isolate region flows + PBA + 1 CBA step ({EXAMPLE_COMMODITY})
+## Step 6. Ownership Explorer: Add owner layer, region-focused view, one consumption stage ({EXAMPLE_COMMODITY})
 
-Keep the same ownership-stage structure as Step 5, but switch scope to isolate mode.
-In this mode, links are kept only if the selected region appears at owner, extraction, or consumption stages.
+Region and year remain **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Keep the ownership structure from Step 5, and switch only the scope to region-focused mode.
+Now links are kept only when {GUIDE_REGION_LABEL} appears at the owner stage, extraction stage, or final-consumption stage.
 """,
             EXAMPLE_FIGURES["ownership_local_1step"],
         ),
         _step_block(
             "landing-ownership-local-3step",
             f"""
-## Step 7. Ownership Explorer: Isolate region flows + PBA + 3 CBA steps ({EXAMPLE_COMMODITY})
+## Step 7. Ownership Explorer: Add owner layer, region-focused view, three consumption stages ({EXAMPLE_COMMODITY})
 
-Keep ownership isolate mode, and expand consumption from 1 CBA stage to 3 CBA stages.
-This is the highest-detail ownership view for tracing where flows are controlled, extracted, and finally consumed.
+Region and year remain **{GUIDE_REGION_LABEL} ({GUIDE_REGION}), {GUIDE_YEAR}**.
+Keep the same settings as Step 6, and split consumption into three stages.
+This is the most detailed chart in the sequence, combining owner location, extraction location, and detailed final consumption.
 """,
             EXAMPLE_FIGURES["ownership_local_3step"],
         ),

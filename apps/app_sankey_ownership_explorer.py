@@ -136,18 +136,22 @@ def _view_summary_text(scope, detail, commodity, region, year, unit):
     unit = _coerce_unit(unit)
 
     if scope == SCOPE_GLOBAL:
-        scope_line = "Global context: ownership, extraction, and downstream stages are shown in world context."
+        scope_line = "View mode: full world view."
     else:
         scope_line = (
-            "Isolate region flows: a link is shown when it connects to the selected region "
-            "at ownership, extraction, or consumption stages."
+            "View mode: region-focused view (only links connected to the selected region are shown "
+            "at owner location, extraction location, or final consumption)."
         )
 
-    detail_line = "Detail: 1-step consumption view." if detail == DETAIL_SUMMARY else "Detail: 3-step consumption view."
+    detail_line = (
+        "Consumption detail: one stage."
+        if detail == DETAIL_SUMMARY
+        else "Consumption detail: three stages."
+    )
     region_label = REGIONS.get(region, region)
     return (
-        f"Current view: {scope_line} {detail_line} "
-        f"Selection: {commodity} | {region_label} ({region}) | {year} | {unit}."
+        f"{scope_line} {detail_line} "
+        f"Selected case: {commodity}; {region_label} ({region}); {year}; {unit}."
     )
 
 
@@ -364,13 +368,16 @@ layout = dbc.Container(
         html.Div(
             dcc.Markdown(
                 """
-Choose how much context you want:
+Use the controls below in this order:
 
-- **Global context** keeps the full world system visible and highlights the selected region within it.
-- **Isolate region flows** keeps a link if it connects to the selected region at ownership, extraction, or consumption stages.
-- **1-step CBA detail** aggregates the consumption side into one downstream stage.
-- **3-step CBA detail** splits the consumption side into three downstream stages.
-- Colors are assigned at the first stage and preserved along the chain.
+- **View scope**
+  - **Global view** shows the whole world system.
+  - **Region-focused view** keeps only links connected to the selected region.
+- **Consumption detail**
+  - **One stage** shows one combined final-consumption block.
+  - **Three stages** shows a more detailed breakdown on the right side.
+- **Commodity, region, year, and unit** define the exact case shown in the chart.
+- In this tab, the left-most stage shows where mine owners are based.
 """
             ),
             className="app-card info-card docs-card reveal",
@@ -383,7 +390,7 @@ Choose how much context you want:
                             html.Div(
                                 [
                                     html.H4("1. Start with scope"),
-                                    html.P("Global gives system context. Isolate gives a focused region story."),
+                                    html.P("Start with global view, then switch to region-focused view to reduce clutter."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -394,7 +401,7 @@ Choose how much context you want:
                             html.Div(
                                 [
                                     html.H4("2. Add detail"),
-                                    html.P("In isolate mode, switch to 3-step when you need finer interpretation."),
+                                    html.P("Keep one-stage detail first; use three-stage detail only when you need finer interpretation."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -405,7 +412,7 @@ Choose how much context you want:
                             html.Div(
                                 [
                                     html.H4("3. Interpret ownership"),
-                                    html.P("The left-most stage is mine-owner nationality before extraction."),
+                                    html.P("Read the left-most column as owner location, then follow links to extraction and consumption."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -628,8 +635,9 @@ Choose how much context you want:
         ),
         html.Div(
             dcc.Markdown(
-                "Read this as: owner nationality (left) -> extraction -> downstream consumption stages. "
-                "Use **Global context** first, then **Isolate region flows** for country-focused analysis."
+                "Read this as: owner location (left), then extraction, then consumption stages. "
+                "Suggested workflow: start with **Global view**, switch to **Region-focused view**, "
+                "then increase consumption detail from **one stage** to **three stages** when needed."
             ),
             className="app-card info-card slim-card reveal",
         ),

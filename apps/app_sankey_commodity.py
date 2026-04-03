@@ -314,18 +314,22 @@ def _view_summary_text(scope, detail, commodity, region, year, unit):
     unit = _coerce_unit(unit)
 
     if scope == SCOPE_GLOBAL:
-        scope_line = "Global context: world system visible around your selected region."
+        scope_line = "View mode: full world view."
     else:
         scope_line = (
-            "Isolate region flows: a link is shown when it connects to the selected region "
-            "at extraction or consumption stages."
+            "View mode: region-focused view (only links connected to the selected region are shown "
+            "at extraction or final consumption)."
         )
 
-    detail_line = "Detail: 1-step consumption view." if detail == DETAIL_SUMMARY else "Detail: 3-step consumption view."
+    detail_line = (
+        "Consumption detail: one stage."
+        if detail == DETAIL_SUMMARY
+        else "Consumption detail: three stages."
+    )
     region_label = REGIONS.get(region, region)
     return (
-        f"Current view: {scope_line} {detail_line} "
-        f"Selection: {commodity} | {region_label} ({region}) | {year} | {unit}."
+        f"{scope_line} {detail_line} "
+        f"Selected case: {commodity}; {region_label} ({region}); {year}; {unit}."
     )
 
 
@@ -465,13 +469,16 @@ layout = dbc.Container(
         html.Div(
             dcc.Markdown(
                 """
-Choose how much context and detail you need:
+Use the controls below in this order:
 
-- **Global context** keeps a world-wide view around the selected region.
-- **Isolate region flows** keeps a link if it connects to the selected region at extraction or consumption stages.
-- **1-step CBA detail** aggregates the consumption side into one downstream stage.
-- **3-step CBA detail** splits the consumption side into three downstream stages.
-- Colors are assigned at the first stage and preserved along the chain.
+- **View scope**
+  - **Global view** shows the whole world system.
+  - **Region-focused view** keeps only links connected to the selected region.
+- **Consumption detail**
+  - **One stage** shows one combined final-consumption block.
+  - **Three stages** shows a more detailed breakdown on the right side.
+- **Commodity, region, year, and unit** define the exact case shown in the chart.
+- Colors start at the left side of each path and stay the same along that path.
 """
             ),
             className="app-card info-card docs-card reveal",
@@ -484,7 +491,7 @@ Choose how much context and detail you need:
                             html.Div(
                                 [
                                     html.H4("1. Pick scope"),
-                                    html.P("Use global for broad context, or isolate for region-focused reading."),
+                                    html.P("Start with global view, then switch to region-focused view to reduce clutter."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -495,7 +502,7 @@ Choose how much context and detail you need:
                             html.Div(
                                 [
                                     html.H4("2. Pick detail"),
-                                    html.P("In isolate mode, switch from 1-step to 3-step to increase consumption detail."),
+                                    html.P("Keep one-stage detail first; use three-stage detail only when you need finer interpretation."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -506,7 +513,7 @@ Choose how much context and detail you need:
                             html.Div(
                                 [
                                     html.H4("3. Read left to right"),
-                                    html.P("Interpret widths in the same chart first, then compare across years."),
+                                    html.P("Read one chart carefully first, then compare the same settings across years."),
                                 ],
                                 className="guide-kpi",
                             ),
@@ -699,8 +706,8 @@ Choose how much context and detail you need:
         ),
         html.Div(
             dcc.Markdown(
-                "Interpretation order: start in **Global context**, then switch to **Isolate region flows**, "
-                "then increase from **1-step** to **3-step** CBA detail when needed."
+                "Suggested workflow: start with **Global view**, then switch to **Region-focused view**. "
+                "Only after that, increase consumption detail from **one stage** to **three stages** if needed."
             ),
             className="app-card info-card slim-card reveal",
         ),

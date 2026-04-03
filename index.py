@@ -1,6 +1,5 @@
 ﻿from dash import dcc
 from dash import html
-from dash.dependencies import Input, Output
 import os
 import dash_bootstrap_components as dbc
 
@@ -68,18 +67,22 @@ app.layout = html.Div(
                                 dbc.Tab(
                                     label="Start here",
                                     tab_id="tab-landing",
+                                    children=landing.layout,
                                 ),
                                 dbc.Tab(
                                     label="Footprint explorer",
                                     tab_id="tab-3",
+                                    children=app_sankey_commodity.layout,
                                 ),
                                 dbc.Tab(
                                     label="Ownership explorer",
                                     tab_id="tab-1",
+                                    children=app_sankey_ownership_explorer.layout,
                                 ),
                                 dbc.Tab(
                                     label="Documentation and downloads",
                                     tab_id="tab-5",
+                                    children=doc.layout,
                                 ),
                             ],
                             id="tabs",
@@ -89,28 +92,12 @@ app.layout = html.Div(
                     ],
                     className="app-tabs-shell reveal",
                 ),
-                html.Main(id="content", className="app-content reveal", children=landing.layout),
             ],
             className="app-shell",
         ),
     ],
     className="app-page",
 )
-
-
-@app.callback(Output("content", "children"), [Input("tabs", "active_tab")])
-def switch_tab(active_tab):
-    active_tab = active_tab or "tab-landing"
-
-    if active_tab == "tab-landing":
-        return landing.layout
-    if active_tab == "tab-1":
-        return app_sankey_ownership_explorer.layout
-    if active_tab == "tab-3":
-        return app_sankey_commodity.layout
-    if active_tab == "tab-5":
-        return doc.layout
-    return landing.layout
 
 
 if __name__ == "__main__":
