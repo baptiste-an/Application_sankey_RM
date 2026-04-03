@@ -32,12 +32,28 @@ app.layout = html.Div(
                     [
                         html.Div(
                             [
-                                html.P("Global Material Flow Explorer", className="app-overline"),
-                                html.H1("Global Metal Ore Flow Sankey Diagrams", className="app-title"),
-                                html.P(
-                                    "Interactive visualisation of extraction, consumption, and ownership pathways "
-                                    "for metal ores across regions and years.",
-                                    className="app-subtitle",
+                                html.Div(
+                                    [
+                                        html.P("Global Material Flow Explorer", className="app-overline"),
+                                        html.H1("Global Metal Ore Flow Sankey Diagrams", className="app-title"),
+                                        html.P(
+                                            "Interactive visualisation of extraction, consumption, and ownership pathways "
+                                            "for metal ores across regions and years.",
+                                            className="app-subtitle",
+                                        ),
+                                    ],
+                                    className="app-masthead-copy",
+                                ),
+                                html.A(
+                                    html.Img(
+                                        src=app.get_asset_url("ccml-logo.svg"),
+                                        className="app-masthead-logo",
+                                        alt="CCML logo",
+                                    ),
+                                    href="https://www.ccml.org.uk/",
+                                    target="_blank",
+                                    rel="noopener noreferrer",
+                                    className="app-masthead-logo-link",
                                 ),
                             ],
                             className="app-masthead-inner",
@@ -73,7 +89,7 @@ app.layout = html.Div(
                     ],
                     className="app-tabs-shell reveal",
                 ),
-                html.Main(id="content", className="app-content reveal"),
+                html.Main(id="content", className="app-content reveal", children=landing.layout),
             ],
             className="app-shell",
         ),
@@ -84,6 +100,8 @@ app.layout = html.Div(
 
 @app.callback(Output("content", "children"), [Input("tabs", "active_tab")])
 def switch_tab(active_tab):
+    active_tab = active_tab or "tab-landing"
+
     if active_tab == "tab-landing":
         return landing.layout
     if active_tab == "tab-1":
@@ -92,7 +110,7 @@ def switch_tab(active_tab):
         return app_sankey_commodity.layout
     if active_tab == "tab-5":
         return doc.layout
-    return html.Div()
+    return landing.layout
 
 
 if __name__ == "__main__":

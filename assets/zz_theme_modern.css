@@ -117,6 +117,15 @@ a:hover {
     position: relative;
     z-index: 1;
     padding: 2rem 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+}
+
+.app-masthead-copy {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .app-overline {
@@ -143,6 +152,25 @@ a:hover {
     font-size: 1.45rem;
     color: var(--text-muted);
     max-width: 82ch;
+}
+
+.app-masthead-logo-link {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    padding: 0.35rem;
+    cursor: pointer;
+}
+
+.app-masthead-logo {
+    display: block;
+    width: clamp(190px, 22vw, 320px);
+    height: auto;
+    max-height: 112px;
+    object-fit: contain;
+    cursor: pointer;
 }
 
 .app-tabs-shell {
@@ -605,10 +633,16 @@ a:hover {
 
     .app-masthead-inner {
         padding: 1.6rem;
+        gap: 1.2rem;
     }
 
     .app-title {
         font-size: clamp(2.1rem, 5.2vw, 2.9rem);
+    }
+
+    .app-masthead-logo {
+        width: clamp(160px, 26vw, 240px);
+        max-height: 84px;
     }
 
     .themed-graph {
@@ -617,6 +651,20 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+    .app-masthead-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .app-masthead-logo-link {
+        align-self: flex-end;
+    }
+
+    .app-masthead-logo {
+        width: clamp(150px, 48vw, 220px);
+        max-height: 74px;
+    }
+
     .app-tabs-nav .nav-link {
         font-size: 1.2rem;
         padding: 0.6rem 0.95rem;
