@@ -446,12 +446,12 @@ SUGGESTED_CITATION_MARKDOWN = """
 
 If you use these diagrams, please cite:
 
-Andrieu, B., Cervantes Barron, K., Heydari, M. et al. (2025). *Country's wealth is not associated with domestic control of metal ore extraction*. Communications Earth & Environment, 6, 379. https://www.nature.com/articles/s43247-025-02321-1
+Andrieu, B., Cervantes Barron, K., Heydari, M. et al. (2025). *Country's wealth is not associated with domestic control of metal ore extraction*. Communications Earth & Environment, 6, 379. [https://doi.org/10.1038/s43247-025-02321-1](https://doi.org/10.1038/s43247-025-02321-1)
 
 Data source and method:
 
-- Lenzen, M. et al. (2021). *Implementing the Material Footprint to measure progress towards SDGs 8 and 12*. Nature Sustainability. https://www.nature.com/articles/s41893-021-00811-6
-- Lenzen, M. et al. (2017). *The Global MRIO Lab - charting the world economy*. Economic Systems Research, 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
+- Lenzen, M. et al. (2021). *Implementing the Material Footprint to measure progress towards SDGs 8 and 12*. Nature Sustainability. [https://doi.org/10.1038/s41893-021-00811-6](https://doi.org/10.1038/s41893-021-00811-6)
+- Lenzen, M. et al. (2017). *The Global MRIO Lab - charting the world economy*. Economic Systems Research, 29, 158-186. [https://doi.org/10.1080/09535314.2017.1301887](https://doi.org/10.1080/09535314.2017.1301887)
 """
 
 layout = dbc.Container(
@@ -694,7 +694,7 @@ Use the controls below in this order:
                         "max": YEAR_MAX,
                         "step": 1,
                         "value": DEFAULT_YEAR,
-                        "marks": {str(year): str(year) for year in range(YEAR_MIN, YEAR_MAX + 1, 1)},
+                        "marks": {str(year): str(year) for year in range(YEAR_MIN, YEAR_MAX + 1, 2)},
                         "persistence": True,
                         "persistence_type": "session",
                     },
@@ -712,7 +712,7 @@ Use the controls below in this order:
             className="app-card info-card slim-card reveal",
         ),
         html.Div(
-            dcc.Markdown(SUGGESTED_CITATION_MARKDOWN),
+            dcc.Markdown(SUGGESTED_CITATION_MARKDOWN, link_target="_blank"),
             className="app-card info-card reveal",
         ),
     ],
@@ -805,7 +805,7 @@ def update_figure(scope, detail, region, year, unit, commodity):
             unit=unit,
             commodity=commodity,
         )
-    except FileNotFoundError:
+    except Exception:
         mode_label = _dataset_mode_label(scope, detail)
         return _empty_figure(
             "No preprocessed Sankey file found for "

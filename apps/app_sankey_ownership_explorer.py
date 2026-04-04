@@ -350,12 +350,12 @@ SUGGESTED_CITATION_MARKDOWN = """
 
 If you use these diagrams, please cite:
 
-Andrieu, B., Cervantes Barron, K., Heydari, M. et al. (2025). *Country's wealth is not associated with domestic control of metal ore extraction*. Communications Earth & Environment, 6, 379. https://www.nature.com/articles/s43247-025-02321-1
+Andrieu, B., Cervantes Barron, K., Heydari, M. et al. (2025). *Country's wealth is not associated with domestic control of metal ore extraction*. Communications Earth & Environment, 6, 379. [https://doi.org/10.1038/s43247-025-02321-1](https://doi.org/10.1038/s43247-025-02321-1)
 
 Data source and method:
 
-- Lenzen, M. et al. (2021). *Implementing the Material Footprint to measure progress towards SDGs 8 and 12*. Nature Sustainability. https://www.nature.com/articles/s41893-021-00811-6
-- Lenzen, M. et al. (2017). *The Global MRIO Lab - charting the world economy*. Economic Systems Research, 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
+- Lenzen, M. et al. (2021). *Implementing the Material Footprint to measure progress towards SDGs 8 and 12*. Nature Sustainability. [https://doi.org/10.1038/s41893-021-00811-6](https://doi.org/10.1038/s41893-021-00811-6)
+- Lenzen, M. et al. (2017). *The Global MRIO Lab - charting the world economy*. Economic Systems Research, 29, 158-186. [https://doi.org/10.1080/09535314.2017.1301887](https://doi.org/10.1080/09535314.2017.1301887)
 """
 
 
@@ -648,7 +648,7 @@ Use the controls below in this order:
             className="app-card info-card slim-card reveal",
         ),
         html.Div(
-            dcc.Markdown(SUGGESTED_CITATION_MARKDOWN),
+            dcc.Markdown(SUGGESTED_CITATION_MARKDOWN, link_target="_blank"),
             className="app-card info-card reveal",
         ),
     ],
@@ -749,7 +749,7 @@ def update_figure(scope, detail, commodity, region, year, unit):
             year=year,
             unit=unit,
         )
-    except FileNotFoundError:
+    except Exception:
         if scope == SCOPE_GLOBAL:
             mode_msg = "global context"
         elif detail == DETAIL_DETAILED:

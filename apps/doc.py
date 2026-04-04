@@ -9,7 +9,8 @@ PARTNERS = [
 ]
 
 DOC_TEXT = dcc.Markdown(
-    """
+    link_target="_blank",
+    children="""
 ## What this app contains
 
 This website provides interactive Sankey diagrams to explore global metal ore value chains.
