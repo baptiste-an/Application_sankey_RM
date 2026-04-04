@@ -8,8 +8,13 @@ import numpy as np
 import plotly.graph_objs as go
 from dash import Input, Output, State, callback_context, dcc, html, no_update
 from dash.exceptions import PreventUpdate
+from flask_caching import Cache
 
 from app import app
+
+cache = Cache(
+    app.server, config={"CACHE_TYPE": "FileSystemCache", "CACHE_DIR": "cache"}
+)
 
 DATA_PATH = pathlib.Path(__file__).parent.joinpath("data").resolve()
 DATA_ROOT = DATA_PATH.joinpath("Results", "Sankey_preprocessed")
@@ -269,6 +274,7 @@ def _load_preprocessed(scope, detail, commodity, region, year):
     return preprocessed_data, mode_kind
 
 
+@cache.memoize()
 def _build_figure(scope, detail, commodity, region, year, unit):
     scope = _coerce_scope(scope)
     detail = _effective_detail(scope, detail)
@@ -359,7 +365,7 @@ layout = dbc.Container(
             [
                 html.H2("Ownership Explorer", className="page-head-title"),
                 html.P(
-                    "Use one chart workspace for both global context and focal-country analysis.",
+                    "Explore extraction and consumption pathways with mine-owner nationality at the left-most stage.",
                     className="page-head-subtitle",
                 ),
             ],
@@ -754,10 +760,10 @@ def update_figure(scope, detail, commodity, region, year, unit):
 
 
 @app.callback(
-    Output("ownership-explorer-commodity", "value"),
-    Output("ownership-explorer-year", "value"),
-    Output("ownership-explorer-region", "value"),
-    Output("ownership-explorer-unit", "value"),
+    Output("ownership-explorer-commodity", "value", allow_duplicate=True),
+    Output("ownership-explorer-year", "value", allow_duplicate=True),
+    Output("ownership-explorer-region", "value", allow_duplicate=True),
+    Output("ownership-explorer-unit", "value", allow_duplicate=True),
     Input("tabs", "active_tab"),
     State("shared-commodity-store", "data"),
     State("shared-year-store", "data"),

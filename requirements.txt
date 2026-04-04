@@ -1,0 +1,10 @@
+gunicorn
+dash
+dash-bootstrap-components
+flask-caching
+numpy
+pandas
+plotly
+pyarrow
+openpyxl
+waitress

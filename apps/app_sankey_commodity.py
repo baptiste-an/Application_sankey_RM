@@ -814,10 +814,10 @@ def update_figure(scope, detail, region, year, unit, commodity):
 
 
 @app.callback(
-    Output("slct2_2", "value"),
-    Output(PlaybackSliderAIO.ids.slider("bruh2_2"), "value"),
-    Output("slct_unit_2", "value"),
-    Output("slct_subtype_2", "value"),
+    Output("slct2_2", "value", allow_duplicate=True),
+    Output(PlaybackSliderAIO.ids.slider("bruh2_2"), "value", allow_duplicate=True),
+    Output("slct_unit_2", "value", allow_duplicate=True),
+    Output("slct_subtype_2", "value", allow_duplicate=True),
     Input("tabs", "active_tab"),
     State("shared-region-store", "data"),
     State("shared-year-store", "data"),

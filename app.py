@@ -9,6 +9,11 @@ app = dash.Dash(
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
     ],
-    title="Sankey commodities",
+    title="Global Metal Ore Flow Sankey Diagrams",
 )
 server = app.server
+
+
+@server.route("/health")
+def health():
+    return {"status": "ok"}, 200

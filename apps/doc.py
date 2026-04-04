@@ -32,17 +32,17 @@ Interpretation logic follows the associated paper in *Communications Earth & Env
 
 ## Downloads and code
 
-- Sankey methodology/code repository: https://github.com/baptiste-an/Mapping-metal-flows-sankeys
-- Web app code base: https://github.com/baptiste-an/Application-mapping-GHG
+- Sankey methodology/code repository: [baptiste-an/Mapping-metal-flows-sankeys](https://github.com/baptiste-an/Mapping-metal-flows-sankeys)
+- Web app code base: [baptiste-an/Application-mapping-GHG](https://github.com/baptiste-an/Application-mapping-GHG)
 - Figure downloads (SVG): FigShare folder associated with the publication
 
 ## Suggested citation
 
-Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country's wealth is not associated with domestic control of metal ore extraction. *Commun Earth Environ* 6, 379 (2025). https://doi.org/10.1038/s43247-025-02321-1
+Andrieu, B., Cervantes Barron, K., Heydari, M. et al. Country's wealth is not associated with domestic control of metal ore extraction. *Commun Earth Environ* 6, 379 (2025). [https://doi.org/10.1038/s43247-025-02321-1](https://doi.org/10.1038/s43247-025-02321-1)
 
-Lenzen, M., A. Geschke, M.D. Abd Rahman, Y. Xiao, J. Fry, R. Reyes, E. Dietzenbacher, S. Inomata, K. Kanemoto, B. Los, D. Moran, H. Schulte in den Baeumen, A. Tukker, T. Walmsley, T. Wiedmann, R. Wood and N. Yamano (2017) The Global MRIO Lab - charting the world economy. *Economic Systems Research* 29, 158-186. https://doi.org/10.1080/09535314.2017.1301887
+Lenzen, M., A. Geschke, M.D. Abd Rahman, Y. Xiao, J. Fry, R. Reyes, E. Dietzenbacher, S. Inomata, K. Kanemoto, B. Los, D. Moran, H. Schulte in den Baeumen, A. Tukker, T. Walmsley, T. Wiedmann, R. Wood and N. Yamano (2017) The Global MRIO Lab - charting the world economy. *Economic Systems Research* 29, 158-186. [https://doi.org/10.1080/09535314.2017.1301887](https://doi.org/10.1080/09535314.2017.1301887)
 
-Lenzen, M., A. Geschke, J. West, J. Fry, A. Malik, S. Giljum, L.M.i. Canals, P. Pinero, S. Lutter, T. Wiedmann, M. Li, M. Sevenster, J. Potocnik, I. Teixeira, M.V. Voore, K. Nansai and H. Schandl (2021) Implementing the Material Footprint to measure progress towards SDGs 8 and 12. *Nature Sustainability*. https://www.nature.com/articles/s41893-021-00811-6
+Lenzen, M., A. Geschke, J. West, J. Fry, A. Malik, S. Giljum, L.M.i. Canals, P. Pinero, S. Lutter, T. Wiedmann, M. Li, M. Sevenster, J. Potocnik, I. Teixeira, M.V. Voore, K. Nansai and H. Schandl (2021) Implementing the Material Footprint to measure progress towards SDGs 8 and 12. *Nature Sustainability*. [https://www.nature.com/articles/s41893-021-00811-6](https://www.nature.com/articles/s41893-021-00811-6)
 
 ## Funding note
 
