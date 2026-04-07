@@ -569,7 +569,7 @@ Use the controls below in this order:
                             html.Div(
                                 [
                                     html.P(
-                                        "Consumption detail (isolate mode only)",
+                                        "Consumption detail (Zoom on a region mode only)",
                                         className="control-label",
                                     ),
                                     dbc.RadioItems(

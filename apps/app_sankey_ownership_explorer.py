@@ -480,7 +480,7 @@ Use the controls below in this order:
                             html.Div(
                                 [
                                     html.P(
-                                        "Consumption detail (isolate mode only)",
+                                        "Consumption detail (Zoom on a region mode only)",
                                         className="control-label",
                                     ),
                                     dbc.RadioItems(
@@ -750,9 +750,9 @@ def update_figure(scope, detail, commodity, region, year, unit):
         if scope == SCOPE_GLOBAL:
             mode_msg = "global context"
         elif detail == DETAIL_DETAILED:
-            mode_msg = "isolated region with 3-step consumption"
+            mode_msg = "Zoom on a region with 3-step consumption"
         else:
-            mode_msg = "isolated region with 1-step consumption"
+            mode_msg = "Zoom on a region with 1-step consumption"
         return _empty_figure(f"No preprocessed Sankey file found for {mode_msg}.")
 
 

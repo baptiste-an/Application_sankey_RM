@@ -211,12 +211,12 @@ def _guided_case_reason(region_code):
     if region_code == "CHL":
         return (
             "Chile is used here because it has complete coverage across all guided views and "
-            "typically shows a strong contrast between global context and isolate-region filtering."
+            "typically shows a strong contrast between global context and Zoom on a region filtering."
         )
     if region_code == "AUS":
         return (
             "Australia is used here because it has complete coverage across all guided views and "
-            "typically shows a stronger contrast between global context and isolate-region filtering."
+            "typically shows a stronger contrast between global context and Zoom on a region filtering."
         )
     if region_code == "CHN":
         return (
@@ -417,7 +417,7 @@ In this app, you can compare these perspectives side-by-side by switching betwee
                         ),
                         _tab_map_card(
                             "Footprint explorer",
-                            "Non-ownership pathways from extraction to consumption (global or isolated region scope).",
+                            "Non-ownership pathways from extraction to consumption (global or Zoom on a region scope).",
                         ),
                         _tab_map_card(
                             "Ownership explorer",
@@ -489,9 +489,9 @@ This toy case illustrates the width rule.
                     """
 ## Toy diagram 2 (explanation)
 
-These two diagrams show the difference between global context and isolate region filtering.
-The global version keeps all surrounding flows; the isolate version retains only flows connected to the focus region.
-In this toy case, isolate mode removes only one link: `Extraction: other regions -> Consumption: rest of world`.
+These two diagrams show the difference between global context and Zoom on a region filtering.
+The global version keeps all surrounding flows; the Zoom on a region version retains only flows connected to the focus region.
+In this toy case, Zoom on a region mode removes only one link: `Extraction: other regions -> Consumption: rest of world`.
 """
                 ),
                 dbc.Row(
