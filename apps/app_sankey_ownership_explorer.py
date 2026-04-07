@@ -456,7 +456,7 @@ Use the controls below in this order:
                                                 "value": SCOPE_GLOBAL,
                                             },
                                             {
-                                                "label": "Isolate region flows",
+                                                "label": "Zoom on a region",
                                                 "value": SCOPE_LOCAL,
                                             },
                                         ],

@@ -301,8 +301,8 @@ def _dataset_mode_label(scope, detail):
     if scope == SCOPE_GLOBAL:
         return "global context, 1-step"
     if detail == DETAIL_SUMMARY:
-        return "isolate region flows, 1-step"
-    return "isolate region flows, 3-step"
+        return "Zoom on a region, 1-step"
+    return "Zoom on a region, 3-step"
 
 
 def _view_summary_text(scope, detail, commodity, region, year, unit):
@@ -547,7 +547,7 @@ Use the controls below in this order:
                                         id="footprint-explorer-scope",
                                         options=[
                                             {"label": "Global context", "value": SCOPE_GLOBAL},
-                                            {"label": "Isolate region flows", "value": SCOPE_LOCAL},
+                                            {"label": "Zoom on a region", "value": SCOPE_LOCAL},
                                         ],
                                         value=DEFAULT_SCOPE,
                                         inline=True,

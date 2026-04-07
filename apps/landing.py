@@ -112,7 +112,7 @@ def _toy_filter_figure(global_view=True):
     else:
         # Keep only links connected to the focus region (source or target).
         active_flows = [flow for flow in flows if flow[0] == 1 or flow[1] == 3]
-        title = "Toy diagram 2b: Isolate region flows"
+        title = "Toy diagram 2b: Zoom on a region"
 
     source, target, value, color = zip(*active_flows)
 
